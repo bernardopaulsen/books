@@ -1,0 +1,407 @@
+\documentclass{book}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[portuguese]{babel}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{fancyvrb, color, hyperref, url}
+\usepackage{palatino}
+\usepackage{pygments}
+\usepackage{mdframed}
+\usepackage{lipsum}
+
+\hypersetup  
+{   pdfauthor = {Matti Pastell},
+  pdftitle={FIR filter design with Python and SciPy},
+  colorlinks=TRUE,
+  linkcolor=black,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2ex}
+
+\renewcommand{\thechapter}{\Roman{chapter}}
+\renewcommand{\thesection}{\arabic{section}}
+
+\newmdtheoremenv{exemplo}{Exemplo}[section]
+
+\newtheorem{propriedade}{Propriedade}[section]
+\newtheorem{definicao}{Definição}[section]
+%\newtheorem{exemplo}{Exemplo}[section]
+
+
+
+\title{Curso de Análise \\
+(Notas)}
+\author{Bernardo Paulsen}
+
+\begin{document}
+
+\maketitle
+
+\chapter*{Prefácio}
+\addcontentsline{toc}{chapter}{Prefácio}
+
+    Estas são as notas de estudo do livro `Curso de Análise', de Elon Lages Lima. Nela tento implementar os conceitos do livro na linguagem de programação Python.
+
+\tableofcontents
+
+
+\chapter*{Preliminares}
+\addcontentsline{toc}{chapter}{Preliminares}
+
+<<>>=
+from itertools import chain, combinations
+@
+
+\chapter{Conjuntos e Funções}
+
+    \section{Conjuntos}
+
+        Um conjunto é formado pelos seus elementos. Um objeto $x$ pertence ao conjunto $A$ quando é um de seus elementos. Pertencimento é representado da forma
+
+        $$ x \in A \text{.}$$
+
+        Um conjunto $A$ fica definido quando se dá uma regra que permita decidir se um objeto arbitrário $x$ pertence ou não a $A$.
+
+        Usa-se a notação
+
+        $$ X = \{a,b,c,\ldots\} $$
+
+        para representar o conjunto $X$ cujos elementos são os objetos $a$, $b$, $c$, etc.
+
+        \begin{exemplo}
+            Abaixo criamos o conjunto $X=\{1,2,3,4\}$.
+
+<<>>=
+X = {1,2,3,4}
+print(f"X: {X}")
+@
+        \end{exemplo}
+
+        \begin{exemplo}
+            Abaixo checamos se o objeto $a=1$ pertence ao conjunto $X=\{1,2,3,4\}$.
+<<>>=
+a = 1
+X = {1,2,3,4}
+print(f"Pertence: {a in X}")
+@
+        \end{exemplo}
+
+        Quando $x$ não é elemento do conjunto $A$ ele não pertence a $A$. Não pertencimento é representado da forma
+
+        $$ x \notin A \text{.}$$
+
+        \begin{exemplo}
+            Abaixo checamos se o objeto $a=1$ não pertence ao conjunto $X=\{1,2,3,4\}$.
+
+<<>>=
+a = 1
+X = {1,2,3,4}
+print(f"Não pertence: {a not in X}")
+@
+        \end{exemplo}
+
+        Agora, alguns conjuntos que utilizaremos: conjunto dos números naturais: $\mathbb{N}$; conjunto dos números inteiros: $\mathbb{Z}$; conjunto dos números racionais: $\mathbb{Q}$.
+
+        É possível definir um cojunto por meio de uma propriedade comum e exclusiva dos seus elementos. Uma propriedade $P$ define um conjunto $X$ caso $x \in X$ se um objeto $x$ goza da propriedade $P$, enquanto $x \notin X$ se $x$ não goza de $P$. Escreve-se
+
+        $$ X = \{x; x \text{ goza da propriedade } P \} \text{.}$$
+    
+        Nos casos que a propriedade $P$ se refere a elementos de um conjunto fundamental $E$ escreve-se
+
+        $$ X = \{x \in E; x \text{ goza da propriedade } P \} \text{.}$$
+
+        \begin{exemplo}
+            Abaixo criamos o conjunto a seguir.
+
+            $$X = \{x \in E; x \text{ é par} \}, \quad E = \{1,2,3,4\}$$
+
+<<>>=
+E = {1,2,3,4}
+X = set(x for x in E if not x%2)
+print(f"X: {X}")
+@
+        \end{exemplo}
+
+        O conjunto vazio $\emptyset$ é definido assim:
+
+        $$\text{Qualquer que seja } x\text{, tem-se }x \notin \emptyset \text{.}$$
+
+        \begin{exemplo}
+            Abaixo criamos um conjunto vazio.
+
+<<>>=
+O = set()
+print(f"Conjunto vazio: {O}")
+@
+        \end{exemplo}
+
+        O conjunto $A$ é um subconjunto de $B$ quando todo elemento de $A$ também é elemento de $B$.
+
+        $$A \subset B$$
+
+        \begin{exemplo}
+            Abaixo checamos se o conjunto $A=\{1,2\}$ é subconjunto de $B=\{1,2,3,4\}$.
+
+<<>>=
+A = {1,2}
+B = {1,2,3,4}
+print(f"É subconjunto: {A.issubset(B)}")
+@
+        \end{exemplo}
+
+        No caso em que $X \subset Y$ e $X \neq Y$ diz-se que $X$ é um subconjunto próprio de $Y$.
+
+        \begin{exemplo}
+            Abaixo, checamos de $A$ é subconjunto próprio de $B$.
+
+<<>>=
+A = {1,2}
+B = {1,2,3,4}
+print(f"É subconjunto: {A.issubset(B)}")
+print(f"É idêntico: {A == B}")
+@
+        \end{exemplo}
+
+        O conjunto vazio $\emptyset$ é subconjunto próprio de qualquer conjunto.
+
+        $$\emptyset \subset X \text{, seja qual for o conjunto } X$$
+
+        \begin{exemplo}
+            Abaixo, checamos se o conjunto vazio é subconjunto de um conjunto $X$.
+
+<<>>=
+O = set()
+X = {1,2,3,4}
+print(f"É subconjunto: {O.issubset(X)}")
+@
+        \end{exemplo}
+
+        A relação de inclusão $A \subset B$ é
+
+        \begin{itemize}
+            \item Reflexiva - $A \subset A \text{, seja qual for o conunto } A$;
+            \item Anti-simétrica - $\text{se }A \subset B \text{ e } B \subset A \text{ então } A = B$;
+            \item Transitiva - $\text{se }A \subset B \text{ e } B \subset C \text{ então } A \subset C$.
+        \end{itemize}
+
+        \begin{exemplo}
+            Primeiramente definimos os conjuntos $A=\{1,2\}$, $B=\{1,2\}$ e $C=\{1,2,3\}$.
+
+<<>>=
+A = {1,2}
+B = {1,2}
+C = {1,2,3}
+@
+
+            Abaixo, checamos abaixo se $A \subset A$.
+
+
+<<>>=
+print(f"A é subconjunto de A: {A.issubset(A)}")
+@
+
+            Abaixo, checamos $A \subset B$, $B \subset A$ e $A = B$.
+
+<<>>=
+print(f"A é subconjunto de B: {A.issubset(B)}")
+print(f"B é subconjunto de A: {B.issubset(A)}")
+print(f"A é B: {A == B}")
+@
+            Abaixo, checamos se $B \subset C$, $A \subset C$.
+<<>>=
+print(f"B é subconjunto de C: {B.issubset(C)}")
+print(f"A é subconjunto de C: {A.issubset(C)}")
+@
+        \end{exemplo}
+
+        Dado um conjunto $X$, indica-se com $P \left( X \right)$ o conjunto cujos elementos são as partes de $X$. Afirmar que $A \in P \left( X \right)$ é o mesmo que dizer $A \subset X$. O conjunto das partes de $X$ nunca é vazio: tem-se pelo menos $\emptyset \in P \left( X \right)$ e $X \in P \left( X \right)$.
+
+        \begin{exemplo}
+            Primeiramente, precisamos criar a função que retornará o conjunto de partes de um conjunto qualquer.
+
+<<>>=
+def powerset(iterable):
+    s = list(iterable)
+    i = (set(combinations(s, r)) for r in range(len(s)+1))
+    p = set(frozenset(e) for e in chain.from_iterable(i))
+    return p
+@
+            Agora, geramos todos o conjunto de partes de $X=\{1,2\}$.
+
+<<>>=
+X = {1,2}
+P = powerset(X)
+print(P)
+@
+        \end{exemplo}
+
+        Sejam $P$ e $Q$ propriedades que se referem a elementos de um certo conjunto $E$. As propriedades $P$ e $Q$ definem subconjutos $X$ e $Y$ de $E$, a saber:
+
+        $$ X = \{ x \in E \text{; } x \text{ goza de } P\} \text{ e } Y = \{ y \in E \text{; } y \text{ goza de } Q\} \text{.}$$
+
+        \begin{exemplo}
+        \label{ex:con_def}
+            Abaixo criamos os conjuntos a seguir.
+        
+            $$E = \{1,2,3,4,5,6,7,8\}$$
+            $$X = \{x \in E; x \text{ é divisível por }4\}$$
+            $$Y = \{y \in E; y \text{ é divisível por }2\}$$
+<<>>=
+E = {1,2,3,4,5,6,7,8}
+X = set((x for x in E if not x%4))
+Y = set((y for y in E if not y%2))
+print(f"X: {X}")
+print(f"Y: {Y}")
+@
+        \end{exemplo}
+
+        As afirmações ``$P$ implica $Q$'' e ``se $P$ então $Q$'' têm o mesmo significado, de que $X \subset Y$ - que todo objeto que goza de $P$ também goza de $Q$. Usa-se a notação
+
+        $$P \implies Q \text{.}$$
+
+        \begin{exemplo}
+            Abaixo utilizamos os conjuntos do Exemplo \ref{ex:con_def}.
+<<>>=
+print(f"X é subconjunto de Y: {X.issubset(Y)}")
+@
+        \end{exemplo}
+
+        Também as afirmações ``$P$ se, e somente se, $Q$'', ``$P$ é condição necessária e suficiente para $Q$'' querem dizer que $P \implies Q$ e $Q \implies P$. A notação é
+
+        $$P \iff Q \text{.}$$
+
+        \begin{exemplo}
+            Utilizando os conjuntos do Exemplo \ref{ex:con_def}, checamos abaixo se $P \iff Q$.
+
+<<>>=
+iff = X.issubset(Y) and Y.issubset(X)
+print(f"X é subcojunto de Y e vice-versa: {iff}")
+@  
+        \end{exemplo}
+
+    \section{Operações entre conjuntos}
+
+        A reunião dos conjuntos $A$ e $B$ é o conunto $A \cup B$, formado pelos elementos de $A$ mais os elementos de $B$.
+
+        $$A \cup B = \{ x\text{; } x \in A \text{ ou } x \in B \}$$
+
+        \begin{exemplo}
+        \label{ex:uniao}
+            Definimos os conjuntos $A = {1,2}$ e $B={2,3}$ e calculamos $A \cup B$.
+<<>>=
+A     = {1,2}
+B     = {2,3}
+union = A.union(B)
+print(f"União de A com B: {union}")
+@
+        \end{exemplo}
+
+        Sejam quais forem os conjuntos $A$ e $B$, tem-se que
+
+        \begin{itemize}
+            \item $A \subset A \cup B$;
+            \item $B \subset A \cup B$.
+        \end{itemize}
+
+        \begin{exemplo}
+            Utilizando os conjuntos do exemplo \ref{ex:uniao}, checamos se $A \subset A \cup B$ e se $B \subset A \cup B$.
+<<>>=
+a = A.issubset(A.union(B))
+b = B.issubset(A.union(B))
+print(f"A é subconjunto da união de A com B: {a}")
+print(f"B é subconjunto da união de A com B: {b}")
+@
+        \end{exemplo}
+
+        A intersecção dos conjuntos $A$ e $B$ é o conjunto $A \cap B$, formado pelos elementos comuns a $A$ e $B$.
+
+        $$ A \cap B = \{x \text{; } x \in A \text{ e } x \in B\}$$
+
+        \begin{exemplo}
+            Utilizando os conjuntos do exemplo \ref{ex:uniao}, calculamos $A \cap B$.
+<<>>=
+A = {1,2}
+B = {2,3}
+i = A.intersection(B)
+print(f"Intersecção de A e B: {i}")
+@
+        \end{exemplo}
+
+        No caso de $A \cap B = \emptyset$, os conjuntos dizem-se disjuntos.
+
+<<>>=
+A = {1,2}
+B = {3,4}
+print(not A.intersection(B))
+
+@
+        
+        Sejam quais forem os conjuntos $A$ e $B$, tem-se que
+
+        \begin{itemize}
+            \item $A \cap B \subset A$;
+            \item $A \cap B \subset B$.
+        \end{itemize}
+
+<<>>=
+print(A.intersection(B).issubset(A))
+print(A.intersection(B).issubset(B))
+@
+
+        A diferença entre os conjuntos $A e B$ é o conjunto $A - B$, formado pelos elementos de $A$ que não pertencem a $B$.
+
+        \begin{definicao}[Diferença]
+        $A - B = \{ x \text{; } x \in A \text{ e } x \notin B\}$
+        \end{definicao}
+
+<<>>=
+A = {1,2}
+B = {2,3}
+print(A.difference(B))
+@
+
+        Quando $A$ e $B$ são disjuntos, $A-B=A$.
+
+<<>>=
+A = {1,2}
+B = {3,4}
+C = A.difference(B)
+print(A.issubset(C), C.issubset(A))
+@
+
+        Quando se tem $B \subset A$, a diferença $A - B$ chama-se o complementar de $B$ em relação a $A$ e escreve-se
+
+        $$A - B = \mathsf{C}_A B \text{.}$$
+
+        Relacionamos abaixo propriedades formais da operação de tomar complementares. Os conjuntos $A$ e $B$ são partes de um conjunto fundamental $E$, em relação ao qual estamos tomando os complementares.
+
+        \begin{propriedade}
+            $\mathsf{C}\left( \mathsf{C}A\right) = A$
+        \end{propriedade}
+
+        \begin{proof}
+            $x \in \mathsf{C}(\mathsf{C}A) \iff x \notin \mathsf{C}A \iff x \in A$
+        \end{proof}
+
+        \begin{propriedade}
+            $A \subset B \iff \mathsf{C}B \subset \mathsf{C}A$
+        \end{propriedade}
+
+        \begin{proof}
+            $\text{Se } A \subset B \text{ então, }x \in \mathsf{C}B \implies x \in \mathsf{A}\text{, o que significa que }\mathsf{C}B \subset \mathsf{C}A$
+        \end{proof}
+
+
+
+
+
+
+
+
+\end{document}

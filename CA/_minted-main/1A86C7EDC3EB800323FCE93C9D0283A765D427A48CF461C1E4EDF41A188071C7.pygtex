@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8}]
+\PYG{n}{O} \PYG{o}{=} \PYG{n+nb}{set}\PYG{p}{()}
+\end{Verbatim}

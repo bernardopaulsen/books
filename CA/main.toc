@@ -1,0 +1,6 @@
+\babel@toc {portuguese}{}
+\contentsline {chapter}{Prefácio}{3}{chapter*.1}%
+\contentsline {chapter}{Preliminares}{7}{chapter*.3}%
+\contentsline {chapter}{\numberline {I}Conjuntos e Funções}{9}{chapter.1}%
+\contentsline {section}{\numberline {1}Conjuntos}{9}{section.1.1}%
+\contentsline {section}{\numberline {2}Operações entre conjuntos}{15}{section.1.2}%

@@ -1,0 +1,576 @@
+\documentclass{book}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[portuguese]{babel}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{fancyvrb, color, hyperref, url}
+\usepackage{palatino}
+\usepackage{pygments}
+\usepackage{mdframed}
+\usepackage{lipsum}
+
+\hypersetup  
+{   pdfauthor = {Matti Pastell},
+  pdftitle={FIR filter design with Python and SciPy},
+  colorlinks=TRUE,
+  linkcolor=black,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2ex}
+
+\renewcommand{\thechapter}{\Roman{chapter}}
+\renewcommand{\thesection}{\arabic{section}}
+
+\newmdtheoremenv{exemplo}{Exemplo}[section]
+
+\newtheorem{propriedade}{Propriedade}[section]
+\newtheorem{definicao}{Definição}[section]
+%\newtheorem{exemplo}{Exemplo}[section]
+
+
+
+\title{Curso de Análise \\
+(Notas)}
+\author{Bernardo Paulsen}
+
+\begin{document}
+
+\maketitle
+
+\chapter*{Prefácio}
+\addcontentsline{toc}{chapter}{Prefácio}
+
+    Estas são as notas de estudo do livro `Curso de Análise', de Elon Lages Lima. Nela tento implementar os conceitos do livro na linguagem de programação Python.
+
+\tableofcontents
+
+
+\chapter*{Preliminares}
+\addcontentsline{toc}{chapter}{Preliminares}
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{k+kn}{from} \PY{n+nn}{itertools} \PY{k+kn}{import} \PY{n}{chain}\PY{p}{,} \PY{n}{combinations}
+\end{Verbatim}
+
+
+\chapter{Conjuntos e Funções}
+
+    \section{Conjuntos}
+
+        Um conjunto é formado pelos seus elementos. Um objeto $x$ pertence ao conjunto $A$ quando é um de seus elementos. Pertencimento é representado da forma
+
+        $$ x \in A \text{.}$$
+
+        Um conjunto $A$ fica definido quando se dá uma regra que permita decidir se um objeto arbitrário $x$ pertence ou não a $A$.
+
+        Usa-se a notação
+
+        $$ X = \{a,b,c,\ldots\} $$
+
+        para representar o conjunto $X$ cujos elementos são os objetos $a$, $b$, $c$, etc.
+
+        \begin{exemplo}
+            Abaixo criamos o conjunto $X=\{1,2,3,4\}$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{X} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{X: }\PY{l+s+si}{\PYZob{}X\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+X: {1, 2, 3, 4}
+\end{Verbatim}
+
+        \end{exemplo}
+
+        \begin{exemplo}
+            Abaixo checamos se o objeto $a=1$ pertence ao conjunto $X=\{1,2,3,4\}$.
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{a} \PY{o}{=} \PY{l+m+mi}{1}
+\PY{n}{X} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Pertence: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{a in X\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+Pertence: True
+\end{Verbatim}
+
+        \end{exemplo}
+
+        Quando $x$ não é elemento do conjunto $A$ ele não pertence a $A$. Não pertencimento é representado da forma
+
+        $$ x \notin A \text{.}$$
+
+        \begin{exemplo}
+            Abaixo checamos se o objeto $a=1$ não pertence ao conjunto $X=\{1,2,3,4\}$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{a} \PY{o}{=} \PY{l+m+mi}{1}
+\PY{n}{X} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Não pertence: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{a not in X\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+Não pertence: False
+\end{Verbatim}
+
+        \end{exemplo}
+
+        Agora, alguns conjuntos que utilizaremos: conjunto dos números naturais: $\mathbb{N}$; conjunto dos números inteiros: $\mathbb{Z}$; conjunto dos números racionais: $\mathbb{Q}$.
+
+        É possível definir um cojunto por meio de uma propriedade comum e exclusiva dos seus elementos. Uma propriedade $P$ define um conjunto $X$ caso $x \in X$ se um objeto $x$ goza da propriedade $P$, enquanto $x \notin X$ se $x$ não goza de $P$. Escreve-se
+
+        $$ X = \{x; x \text{ goza da propriedade } P \} \text{.}$$
+    
+        Nos casos que a propriedade $P$ se refere a elementos de um conjunto fundamental $E$ escreve-se
+
+        $$ X = \{x \in E; x \text{ goza da propriedade } P \} \text{.}$$
+
+        \begin{exemplo}
+            Abaixo criamos o conjunto a seguir.
+
+            $$X = \{x \in E; x \text{ é par} \}, \quad E = \{1,2,3,4\}$$
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{E} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n}{X} \PY{o}{=} \PY{n+nb}{set}\PY{p}{(}\PY{n}{x} \PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n}{E} \PY{k}{if} \PY{o+ow}{not} \PY{n}{x}\PY{o}{\PYZpc{}}\PY{k}{2})
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{X: }\PY{l+s+si}{\PYZob{}X\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+X: {2, 4}
+\end{Verbatim}
+
+        \end{exemplo}
+
+        O conjunto vazio $\emptyset$ é definido assim:
+
+        $$\text{Qualquer que seja } x\text{, tem-se }x \notin \emptyset \text{.}$$
+
+        \begin{exemplo}
+            Abaixo criamos um conjunto vazio.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{O} \PY{o}{=} \PY{n+nb}{set}\PY{p}{(}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Conjunto vazio: }\PY{l+s+si}{\PYZob{}O\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+Conjunto vazio: set()
+\end{Verbatim}
+
+        \end{exemplo}
+
+        O conjunto $A$ é um subconjunto de $B$ quando todo elemento de $A$ também é elemento de $B$.
+
+        $$A \subset B$$
+
+        \begin{exemplo}
+            Abaixo checamos se o conjunto $A=\{1,2\}$ é subconjunto de $B=\{1,2,3,4\}$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{É subconjunto: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{A.issubset(B)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+É subconjunto: True
+\end{Verbatim}
+
+        \end{exemplo}
+
+        No caso em que $X \subset Y$ e $X \neq Y$ diz-se que $X$ é um subconjunto próprio de $Y$.
+
+        \begin{exemplo}
+            Abaixo, checamos de $A$ é subconjunto próprio de $B$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{É subconjunto: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{A.issubset(B)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{É idêntico: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{A == B\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+É subconjunto: True
+É idêntico: False
+\end{Verbatim}
+
+        \end{exemplo}
+
+        O conjunto vazio $\emptyset$ é subconjunto próprio de qualquer conjunto.
+
+        $$\emptyset \subset X \text{, seja qual for o conjunto } X$$
+
+        \begin{exemplo}
+            Abaixo, checamos se o conjunto vazio é subconjunto de um conjunto $X$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{O} \PY{o}{=} \PY{n+nb}{set}\PY{p}{(}\PY{p}{)}
+\PY{n}{X} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{É subconjunto: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{O.issubset(X)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+É subconjunto: True
+\end{Verbatim}
+
+        \end{exemplo}
+
+        A relação de inclusão $A \subset B$ é
+
+        \begin{itemize}
+            \item Reflexiva - $A \subset A \text{, seja qual for o conunto } A$;
+            \item Anti-simétrica - $\text{se }A \subset B \text{ e } B \subset A \text{ então } A = B$;
+            \item Transitiva - $\text{se }A \subset B \text{ e } B \subset C \text{ então } A \subset C$.
+        \end{itemize}
+
+        \begin{exemplo}
+            Primeiramente definimos os conjuntos $A=\{1,2\}$, $B=\{1,2\}$ e $C=\{1,2,3\}$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{C} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{\PYZcb{}}
+\end{Verbatim}
+
+
+            Abaixo, checamos abaixo se $A \subset A$.
+
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{A é subconjunto de A: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{A.issubset(A)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+A é subconjunto de A: True
+\end{Verbatim}
+
+
+            Abaixo, checamos $A \subset B$, $B \subset A$ e $A = B$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{A é subconjunto de B: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{A.issubset(B)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{B é subconjunto de A: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{B.issubset(A)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{A é B: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{A == B\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+A é subconjunto de B: True
+B é subconjunto de A: True
+A é B: True
+\end{Verbatim}
+
+            Abaixo, checamos se $B \subset C$, $A \subset C$.
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{B é subconjunto de C: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{B.issubset(C)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{A é subconjunto de C: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{A.issubset(C)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+B é subconjunto de C: True
+A é subconjunto de C: True
+\end{Verbatim}
+
+        \end{exemplo}
+
+        Dado um conjunto $X$, indica-se com $P \left( X \right)$ o conjunto cujos elementos são as partes de $X$. Afirmar que $A \in P \left( X \right)$ é o mesmo que dizer $A \subset X$. O conjunto das partes de $X$ nunca é vazio: tem-se pelo menos $\emptyset \in P \left( X \right)$ e $X \in P \left( X \right)$.
+
+        \begin{exemplo}
+            Primeiramente, precisamos criar a função que retornará o conjunto de partes de um conjunto qualquer.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{k}{def} \PY{n+nf}{powerset}\PY{p}{(}\PY{n}{iterable}\PY{p}{)}\PY{p}{:}
+    \PY{n}{s} \PY{o}{=} \PY{n+nb}{list}\PY{p}{(}\PY{n}{iterable}\PY{p}{)}
+    \PY{n}{i} \PY{o}{=} \PY{p}{(}\PY{n+nb}{set}\PY{p}{(}\PY{n}{combinations}\PY{p}{(}\PY{n}{s}\PY{p}{,} \PY{n}{r}\PY{p}{)}\PY{p}{)} \PY{k}{for} \PY{n}{r} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{s}\PY{p}{)}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}
+    \PY{n}{p} \PY{o}{=} \PY{n+nb}{set}\PY{p}{(}\PY{n+nb}{frozenset}\PY{p}{(}\PY{n}{e}\PY{p}{)} \PY{k}{for} \PY{n}{e} \PY{o+ow}{in} \PY{n}{chain}\PY{o}{.}\PY{n}{from\PYZus{}iterable}\PY{p}{(}\PY{n}{i}\PY{p}{)}\PY{p}{)}
+    \PY{k}{return} \PY{n}{p}
+\end{Verbatim}
+
+            Agora, geramos todos o conjunto de partes de $X=\{1,2\}$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{X} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{P} \PY{o}{=} \PY{n}{powerset}\PY{p}{(}\PY{n}{X}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{P}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+{frozenset(), frozenset({2}), frozenset({1}), frozenset({1, 2})}
+\end{Verbatim}
+
+        \end{exemplo}
+
+        Sejam $P$ e $Q$ propriedades que se referem a elementos de um certo conjunto $E$. As propriedades $P$ e $Q$ definem subconjutos $X$ e $Y$ de $E$, a saber:
+
+        $$ X = \{ x \in E \text{; } x \text{ goza de } P\} \text{ e } Y = \{ y \in E \text{; } y \text{ goza de } Q\} \text{.}$$
+
+        \begin{exemplo}
+        \label{ex:con_def}
+            Abaixo criamos os conjuntos a seguir.
+        
+            $$E = \{1,2,3,4,5,6,7,8\}$$
+            $$X = \{x \in E; x \text{ é divisível por }4\}$$
+            $$Y = \{y \in E; y \text{ é divisível por }2\}$$
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{E} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{,}\PY{l+m+mi}{5}\PY{p}{,}\PY{l+m+mi}{6}\PY{p}{,}\PY{l+m+mi}{7}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{\PYZcb{}}
+\PY{n}{X} \PY{o}{=} \PY{n+nb}{set}\PY{p}{(}\PY{p}{(}\PY{n}{x} \PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n}{E} \PY{k}{if} \PY{o+ow}{not} \PY{n}{x}\PY{o}{\PYZpc{}}\PY{k}{4}))
+\PY{n}{Y} \PY{o}{=} \PY{n+nb}{set}\PY{p}{(}\PY{p}{(}\PY{n}{y} \PY{k}{for} \PY{n}{y} \PY{o+ow}{in} \PY{n}{E} \PY{k}{if} \PY{o+ow}{not} \PY{n}{y}\PY{o}{\PYZpc{}}\PY{k}{2}))
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{X: }\PY{l+s+si}{\PYZob{}X\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Y: }\PY{l+s+si}{\PYZob{}Y\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+X: {8, 4}
+Y: {8, 2, 4, 6}
+\end{Verbatim}
+
+        \end{exemplo}
+
+        As afirmações ``$P$ implica $Q$'' e ``se $P$ então $Q$'' têm o mesmo significado, de que $X \subset Y$ - que todo objeto que goza de $P$ também goza de $Q$. Usa-se a notação
+
+        $$P \implies Q \text{.}$$
+
+        \begin{exemplo}
+            Abaixo utilizamos os conjuntos do Exemplo \ref{ex:con_def}.
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{X é subconjunto de Y: }\PY{l+s+s2}{\PYZob{}}\PY{l+s+s2}{X.issubset(Y)\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+X é subconjunto de Y: True
+\end{Verbatim}
+
+        \end{exemplo}
+
+        Também as afirmações ``$P$ se, e somente se, $Q$'', ``$P$ é condição necessária e suficiente para $Q$'' querem dizer que $P \implies Q$ e $Q \implies P$. A notação é
+
+        $$P \iff Q \text{.}$$
+
+        \begin{exemplo}
+            Utilizando os conjuntos do Exemplo \ref{ex:con_def}, checamos abaixo se $P \iff Q$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{iff} \PY{o}{=} \PY{n}{X}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{Y}\PY{p}{)} \PY{o+ow}{and} \PY{n}{Y}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{X}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{X é subcojunto de Y e vice\PYZhy{}versa: }\PY{l+s+si}{\PYZob{}iff\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+X é subcojunto de Y e vice-versa: False
+\end{Verbatim}
+
+        \end{exemplo}
+
+    \section{Operações entre conjuntos}
+
+        A reunião dos conjuntos $A$ e $B$ é o conunto $A \cup B$, formado pelos elementos de $A$ mais os elementos de $B$.
+
+        $$A \cup B = \{ x\text{; } x \in A \text{ ou } x \in B \}$$
+
+        \begin{exemplo}
+        \label{ex:uniao}
+            Definimos os conjuntos $A = {1,2}$ e $B={2,3}$ e calculamos $A \cup B$.
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A}     \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B}     \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{\PYZcb{}}
+\PY{n}{union} \PY{o}{=} \PY{n}{A}\PY{o}{.}\PY{n}{union}\PY{p}{(}\PY{n}{B}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{União de A com B: }\PY{l+s+si}{\PYZob{}union\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+União de A com B: {1, 2, 3}
+\end{Verbatim}
+
+        \end{exemplo}
+
+        Sejam quais forem os conjuntos $A$ e $B$, tem-se que
+
+        \begin{itemize}
+            \item $A \subset A \cup B$;
+            \item $B \subset A \cup B$.
+        \end{itemize}
+
+        \begin{exemplo}
+            Utilizando os conjuntos do exemplo \ref{ex:uniao}, checamos se $A \subset A \cup B$ e se $B \subset A \cup B$.
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{a} \PY{o}{=} \PY{n}{A}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{A}\PY{o}{.}\PY{n}{union}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{p}{)}
+\PY{n}{b} \PY{o}{=} \PY{n}{B}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{A}\PY{o}{.}\PY{n}{union}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{A é subconjunto da união de A com B: }\PY{l+s+si}{\PYZob{}a\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{B é subconjunto da união de A com B: }\PY{l+s+si}{\PYZob{}b\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+A é subconjunto da união de A com B: True
+B é subconjunto da união de A com B: True
+\end{Verbatim}
+
+        \end{exemplo}
+
+        A intersecção dos conjuntos $A$ e $B$ é o conjunto $A \cap B$, formado pelos elementos comuns a $A$ e $B$.
+
+        $$ A \cap B = \{x \text{; } x \in A \text{ e } x \in B\}$$
+
+        \begin{exemplo}
+            Utilizando os conjuntos do exemplo \ref{ex:uniao}, calculamos $A \cap B$.
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{\PYZcb{}}
+\PY{n}{i} \PY{o}{=} \PY{n}{A}\PY{o}{.}\PY{n}{intersection}\PY{p}{(}\PY{n}{B}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Intersecção de A e B: }\PY{l+s+si}{\PYZob{}i\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+Intersecção de A e B: {2}
+\end{Verbatim}
+
+        \end{exemplo}
+
+        No caso de $A \cap B = \emptyset$, os conjuntos dizem-se disjuntos.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{o+ow}{not} \PY{n}{A}\PY{o}{.}\PY{n}{intersection}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+True
+\end{Verbatim}
+
+        
+        Sejam quais forem os conjuntos $A$ e $B$, tem-se que
+
+        \begin{itemize}
+            \item $A \cap B \subset A$;
+            \item $A \cap B \subset B$.
+        \end{itemize}
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{A}\PY{o}{.}\PY{n}{intersection}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{A}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{A}\PY{o}{.}\PY{n}{intersection}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+True
+True
+\end{Verbatim}
+
+
+        A diferença entre os conjuntos $A e B$ é o conjunto $A - B$, formado pelos elementos de $A$ que não pertencem a $B$.
+
+        \begin{definicao}[Diferença]
+        $A - B = \{ x \text{; } x \in A \text{ e } x \notin B\}$
+        \end{definicao}
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{\PYZcb{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{A}\PY{o}{.}\PY{n}{difference}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+{1}
+\end{Verbatim}
+
+
+        Quando $A$ e $B$ são disjuntos, $A-B=A$.
+
+
+
+\begin{Verbatim}[commandchars=\\\{\},frame=single,fontsize=\small, xleftmargin=0.5em]
+\PY{n}{A} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{\PYZcb{}}
+\PY{n}{B} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{\PYZcb{}}
+\PY{n}{C} \PY{o}{=} \PY{n}{A}\PY{o}{.}\PY{n}{difference}\PY{p}{(}\PY{n}{B}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{A}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{C}\PY{p}{)}\PY{p}{,} \PY{n}{C}\PY{o}{.}\PY{n}{issubset}\PY{p}{(}\PY{n}{A}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\},frame=leftline,fontsize=\small, xleftmargin=0.5em]
+True True
+\end{Verbatim}
+
+
+        Quando se tem $B \subset A$, a diferença $A - B$ chama-se o complementar de $B$ em relação a $A$ e escreve-se
+
+        $$A - B = \mathsf{C}_A B \text{.}$$
+
+        Relacionamos abaixo propriedades formais da operação de tomar complementares. Os conjuntos $A$ e $B$ são partes de um conjunto fundamental $E$, em relação ao qual estamos tomando os complementares.
+
+        \begin{propriedade}
+            $\mathsf{C}\left( \mathsf{C}A\right) = A$
+        \end{propriedade}
+
+        \begin{proof}
+            $x \in \mathsf{C}(\mathsf{C}A) \iff x \notin \mathsf{C}A \iff x \in A$
+        \end{proof}
+
+        \begin{propriedade}
+            $A \subset B \iff \mathsf{C}B \subset \mathsf{C}A$
+        \end{propriedade}
+
+        \begin{proof}
+            $\text{Se } A \subset B \text{ então, }x \in \mathsf{C}B \implies x \in \mathsf{A}\text{, o que significa que }\mathsf{C}B \subset \mathsf{C}A$
+        \end{proof}
+
+
+
+
+
+
+
+
+\end{document}
